@@ -3,7 +3,7 @@
     "name": "bburdette/websocket",
     "summary": "open, close websockets, send and receive messages.",
     "license": "BSD-3-Clause",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "exposed-modules": [
         "WebSocket"
     ],
