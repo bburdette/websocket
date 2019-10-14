@@ -44,11 +44,12 @@ Put the above in your index.html or whatever.
 Then in your Main.elm (or wherever you define your ports), you'll want to make 
 some ports like this:
 
-    port receiveSocketMsg : (JD.Value -> msg) -> Sub msg
-    port sendSocketCommand : JE.Value -> Cmd msg
+port receiveSocketMsg : (JD.Value -> msg) -> Sub msg
+port sendSocketCommand : JE.Value -> Cmd msg
 
-See below for usage specifics. Lastly, you'll need to set up the port function in
-javascript, as in this example (the subscribe line).
+See the WebSocket module for usage specifics. 
+
+Lastly, you'll need to set up the port function in javascript, as in this example (the subscribe line).
 
       <script>
         var app = Elm.Main.init( { node: document.getElementById("elm") });
