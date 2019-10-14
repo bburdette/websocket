@@ -7,9 +7,7 @@ module WebSocket exposing
     , send
     )
 
-{-| WebSocket.
-
-This WebSocket Elm module lets you encode and decode messages to pass to javascript,
+{-| This WebSocket Elm module lets you encode and decode messages to pass to javascript,
 where the actual websocket sending and receiving will take place. See the README for more.
 
 @docs WebSocketCmd
@@ -73,11 +71,14 @@ receive wsmMsg =
             |> wsmMsg
 
 
-{-| messages going out from Elm to be processed in javascript.
-name: You should give each websocket connection a unique name.
-address: is the websocket address, for instance "<ws://127.0.0.1:9000">.
-protocol: is an extra string to help the server know what kind of data to expect, like
-if your server handled json or binary data. Probably you can pass it "".
+{-| WebSocketCmds go from from elm out to javascript to be processed.
+
+  - name: You should give each websocket connection a unique name.
+  - address: is the websocket address, for instance "<ws://127.0.0.1:9000">.
+  - protocol: is an extra string to help the server know what kind of data to expect, like
+    if your server handled either json or binary data. Probably you can just pass it "".
+  - content: the data you're sending through the socket.
+
 -}
 type WebSocketCmd
     = Connect { name : String, address : String, protocol : String }
@@ -85,8 +86,8 @@ type WebSocketCmd
     | Close { name : String }
 
 
-{-| responses from javascript after websocket operations.
-The name is the one you have the socket in Connect.
+{-| WebSocketMsgs are responses from javascript to elm after websocket operations.
+The name should be the same string you used in Connect.
 -}
 type WebSocketMsg
     = Error { name : String, error : String }
