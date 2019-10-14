@@ -44,8 +44,8 @@ Put the above in your index.html or whatever.
 Then in your Main.elm (or wherever you define your ports), you'll want to make 
 some ports like this:
 
-port receiveSocketMsg : (JD.Value -> msg) -> Sub msg
-port sendSocketCommand : JE.Value -> Cmd msg
+    port receiveSocketMsg : (JD.Value -> msg) -> Sub msg
+    port sendSocketCommand : JE.Value -> Cmd msg
 
 See the WebSocket module for usage specifics. 
 
