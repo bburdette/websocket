@@ -1,9 +1,23 @@
-module WebSocket exposing (WebSocketCmd(..), WebSocketMsg(..), decodeMsg, encodeCmd, receive, send)
+module WebSocket exposing
+    ( WebSocketCmd(..)
+    , WebSocketMsg(..)
+    , decodeMsg
+    , encodeCmd
+    , receive
+    , send
+    )
 
 {-| WebSocket.
 
 This WebSocket Elm module lets you encode and decode messages to pass to javascript,
 where the actual websocket sending and receiving will take place. See the README for more.
+
+@docs WebSocketCmd
+@docs WebSocketMsg
+@docs decodeMsg
+@docs encodeCmd
+@docs receive
+@docs send
 
 -}
 
