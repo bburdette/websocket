@@ -61,4 +61,4 @@ Lastly, you'll need to set up the port function in javascript, as in this exampl
         app.ports.sendSocketCommand.subscribe(sendSocketCommand);
       </script>
 
-
+There's no example code here yet, but [touchpage](https://github.com/bburdette/touchpage) uses websocket. Requires rust.
