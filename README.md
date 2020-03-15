@@ -16,7 +16,7 @@ is right here:
           if (wat.cmd == "connect")
           {
             // console.log("connecting!");
-            socket = new WebSocket(wat.address, wat.protocol);
+            let socket = new WebSocket(wat.address, wat.protocol);
             socket.onmessage = function (event) {
               // console.log( "onmessage: " +  JSON.stringify(event.data, null, 4));
               app.ports.receiveSocketMsg.send({ name : wat.name
