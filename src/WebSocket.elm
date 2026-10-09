@@ -139,6 +139,11 @@ decodeMsg =
                             (JD.field "name" JD.string)
                             (JD.field "data" JD.string)
 
+                    "close" ->
+                        JD.map2 (\a b -> Data { name = a, data = b })
+                            (JD.field "name" JD.string)
+                            (JD.field "data" JD.string)
+
                     unk ->
                         JD.fail <| "unknown websocketmsg type: " ++ unk
             )
