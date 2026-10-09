@@ -94,7 +94,8 @@ close event codes are documented here:
 
 -}
 type WebSocketMsg
-    = OnClose { name : String, code : Int }
+    = OnOpen { name : String }
+    | OnClose { name : String, code : Int }
     | OnError { name : String, error : String }
     | OnData { name : String, data : String }
 
@@ -148,6 +149,10 @@ decodeMsg =
                         JD.map2 (\a b -> OnClose { name = a, code = b })
                             (JD.field "name" JD.string)
                             (JD.field "code" JD.int)
+
+                    "open" ->
+                        JD.map (\a -> OnOpen { name = a })
+                            (JD.field "name" JD.string)
 
                     unk ->
                         JD.fail <| "unknown websocketmsg type: " ++ unk
