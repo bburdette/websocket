@@ -88,10 +88,15 @@ type WebSocketCmd
 
 {-| WebSocketMsgs are responses from javascript to elm after websocket operations.
 The name should be the same string you used in Connect.
+
+close event codes are documented here:
+<https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code>
+
 -}
 type WebSocketMsg
-    = Error { name : String, error : String }
-    | Data { name : String, data : String }
+    = OnClose { name : String, code : Int }
+    | OnError { name : String, error : String }
+    | OnData { name : String, data : String }
 
 
 {-| encode websocket commands into json.
@@ -130,19 +135,19 @@ decodeMsg =
             (\msg ->
                 case msg of
                     "error" ->
-                        JD.map2 (\a b -> Error { name = a, error = b })
+                        JD.map2 (\a b -> OnError { name = a, error = b })
                             (JD.field "name" JD.string)
                             (JD.field "error" JD.string)
 
                     "data" ->
-                        JD.map2 (\a b -> Data { name = a, data = b })
+                        JD.map2 (\a b -> OnData { name = a, data = b })
                             (JD.field "name" JD.string)
                             (JD.field "data" JD.string)
 
                     "close" ->
-                        JD.map2 (\a b -> Data { name = a, data = b })
+                        JD.map2 (\a b -> OnClose { name = a, code = b })
                             (JD.field "name" JD.string)
-                            (JD.field "data" JD.string)
+                            (JD.field "code" JD.int)
 
                     unk ->
                         JD.fail <| "unknown websocketmsg type: " ++ unk
