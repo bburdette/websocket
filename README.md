@@ -8,36 +8,79 @@ The WebSocket Elm module lets you encode and decode messages to pass to javascri
 You'll need some JS code to do the actual websocket sending and receiving. That code
 is right here:
 
-      <script>
+    <script>
+        // websockets
         var mySockets = {};
+        var sockQueue = {};
 
-        function sendSocketCommand(wat) {
-          // console.log( "ssc: " +  JSON.stringify(wat, null, 4));
-          if (wat.cmd == "connect")
-          {
-            // console.log("connecting!");
-            let socket = new WebSocket(wat.address, wat.protocol);
-            socket.onmessage = function (event) {
-              // console.log( "onmessage: " +  JSON.stringify(event.data, null, 4));
-              app.ports.receiveSocketMsg.send({ name : wat.name
-                                              , msg : "data"
-                                              , data : event.data} );
+        function sendSocketCommand(sc) {
+            // console.log( "ssc: " +  JSON.stringify(sc, null, 4));
+            if (sc.cmd == "connect")
+            {
+                // console.log("connecting!");
+                let socket = new WebSocket(sc.address);
+                socket.onmessage = function (event) {
+                    // console.log( "onmessage: " +  JSON.stringify(event.data, null, 4));
+                    app.ports.receiveSocketMsg.send(
+                        { name : sc.name
+                        , msg : "data"
+                        , data : event.data}
+                    );
+                };
+                socket.onopen = function (event) {
+                    // console.log( "onopen, websocket: \"" + sc.name + "\"");
+                    let sq = sockQueue[sc.name];
+                    if (sq) {
+                        for (let msg of sq) {
+                            mySockets[sc.name].send(msg);
+                        }
+                        sockQueue[sc.name] = [];
+                    }
+                };
+                socket.addEventListener("close", function (event) {
+                    // console.log( "socket close: ", event);
+                    app.ports.receiveSocketMsg.send(
+                        { name : sc.name
+                        , msg : "close"
+                        , code : event.code }
+                    );
+                });
+                socket.addEventListener("error", function (event) {
+                    // console.log( "socket error: " +  JSON.stringify(event.data, null, 4));
+                    app.ports.receiveSocketMsg.send(
+                        { name : sc.name
+                        , msg : "error"
+                        , error : event.data}
+                    );
+                });
+                mySockets[sc.name] = socket;
             }
-            mySockets[wat.name] = socket;
-          }
-          else if (wat.cmd == "send")
-          {
-            // console.log("sending to socket: " + wat.name );
-            mySockets[wat.name].send(wat.content);
-          }
-          else if (wat.cmd == "close")
-          {
-            // console.log("closing socket: " + wat.name);
-            mySockets[wat.name].close();
-            delete mySockets[wat.name];
-          }
-        }
-      </script>
+            else if (sc.cmd == "send")
+            {
+                // console.log("sending to socket: " + sc.name, mySockets[sc.name].readyState);
+                if (mySockets[sc.name].readyState) {
+                    mySockets[sc.name].send(sc.content);
+                    } else
+                    {
+                        // console.log("queuing message", sc.name, sc.content);
+                        let sq = sockQueue[sc.name];
+                        if (sq) {
+                            sq.push(sc.content);
+                            } else {
+                                sq = [sc.content];
+                            }
+                            sockQueue[sc.name] = sq;
+                        }
+                    }
+                    else if (sc.cmd == "close")
+                    {
+                        // don't trigger close event when initiated from elm.
+                        mySockets[sc.name].removeEventListener("close");
+                        mySockets[sc.name].close();
+                        delete mySockets[sc.name];
+                    }
+              }
+    </script>
 
 Put the above in your index.html or whatever.
 

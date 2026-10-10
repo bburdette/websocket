@@ -5,6 +5,7 @@ module WebSocket exposing
     , encodeCmd
     , receive
     , send
+    , SocketClosure, showSocketClosure, socketClosure
     )
 
 {-| This WebSocket Elm module lets you encode and decode messages to pass to javascript,
@@ -88,10 +89,16 @@ type WebSocketCmd
 
 {-| WebSocketMsgs are responses from javascript to elm after websocket operations.
 The name should be the same string you used in Connect.
+
+close event codes are documented here:
+<https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code>
+
 -}
 type WebSocketMsg
-    = Error { name : String, error : String }
-    | Data { name : String, data : String }
+    = OnOpen { name : String }
+    | OnClose { name : String, code : Int }
+    | OnError { name : String, error : String }
+    | OnData { name : String, data : String }
 
 
 {-| encode websocket commands into json.
@@ -130,15 +137,150 @@ decodeMsg =
             (\msg ->
                 case msg of
                     "error" ->
-                        JD.map2 (\a b -> Error { name = a, error = b })
+                        JD.map2 (\a b -> OnError { name = a, error = b })
                             (JD.field "name" JD.string)
                             (JD.field "error" JD.string)
 
                     "data" ->
-                        JD.map2 (\a b -> Data { name = a, data = b })
+                        JD.map2 (\a b -> OnData { name = a, data = b })
                             (JD.field "name" JD.string)
                             (JD.field "data" JD.string)
+
+                    "close" ->
+                        JD.map2 (\a b -> OnClose { name = a, code = b })
+                            (JD.field "name" JD.string)
+                            (JD.field "code" JD.int)
+
+                    "open" ->
+                        JD.map (\a -> OnOpen { name = a })
+                            (JD.field "name" JD.string)
 
                     unk ->
                         JD.fail <| "unknown websocketmsg type: " ++ unk
             )
+
+
+type SocketClosure
+    = NormalClosure
+    | GoingAway
+    | Protocolerror
+    | UnsupportedData
+    | Reserved
+    | NoStatusReceived
+    | AbnormalClosure
+    | Invalidframepayloaddata
+    | PolicyViolation
+    | MessageTooBig
+    | MandatoryExtension
+    | InternalError
+    | ServiceRestart
+    | TryAgainLater
+    | BadGateway
+    | TLSHandshake
+
+
+socketClosure : Int -> Maybe SocketClosure
+socketClosure code =
+    case code of
+        1000 ->
+            Just NormalClosure
+
+        1001 ->
+            Just GoingAway
+
+        1002 ->
+            Just Protocolerror
+
+        1003 ->
+            Just UnsupportedData
+
+        1004 ->
+            Just Reserved
+
+        1005 ->
+            Just NoStatusReceived
+
+        1006 ->
+            Just AbnormalClosure
+
+        1007 ->
+            Just Invalidframepayloaddata
+
+        1008 ->
+            Just PolicyViolation
+
+        1009 ->
+            Just MessageTooBig
+
+        1010 ->
+            Just MandatoryExtension
+
+        1011 ->
+            Just InternalError
+
+        1012 ->
+            Just ServiceRestart
+
+        1013 ->
+            Just TryAgainLater
+
+        1014 ->
+            Just BadGateway
+
+        1015 ->
+            Just TLSHandshake
+
+        _ ->
+            Nothing
+
+
+showSocketClosure : SocketClosure -> String
+showSocketClosure sc =
+    case sc of
+        NormalClosure ->
+            "Normal Closure"
+
+        GoingAway ->
+            "Going Away"
+
+        Protocolerror ->
+            "Protocolerror"
+
+        UnsupportedData ->
+            "Unsupported Data"
+
+        Reserved ->
+            "Reserved"
+
+        NoStatusReceived ->
+            "No Status Received"
+
+        AbnormalClosure ->
+            "Abnormal Closure"
+
+        Invalidframepayloaddata ->
+            "Invalidframepayloaddata"
+
+        PolicyViolation ->
+            "Policy Violation"
+
+        MessageTooBig ->
+            "Message Too Big"
+
+        MandatoryExtension ->
+            "Mandatory Extension"
+
+        InternalError ->
+            "Internal Error"
+
+        ServiceRestart ->
+            "Service Restart"
+
+        TryAgainLater ->
+            "Try Again Later"
+
+        BadGateway ->
+            "Bad Gateway"
+
+        TLSHandshake ->
+            "TLS Handshake"
