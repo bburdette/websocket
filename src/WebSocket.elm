@@ -97,7 +97,7 @@ close event codes are documented here:
 type WebSocketMsg
     = OnOpen { name : String }
     | OnClose { name : String, code : Int }
-    | OnError { name : String, error : String }
+    | OnError { name : String }
     | OnData { name : String, data : String }
 
 
@@ -137,9 +137,8 @@ decodeMsg =
             (\msg ->
                 case msg of
                     "error" ->
-                        JD.map2 (\a b -> OnError { name = a, error = b })
+                        JD.map (\a -> OnError { name = a })
                             (JD.field "name" JD.string)
-                            (JD.field "error" JD.string)
 
                     "data" ->
                         JD.map2 (\a b -> OnData { name = a, data = b })
