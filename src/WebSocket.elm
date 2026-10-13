@@ -5,7 +5,7 @@ module WebSocket exposing
     , encodeCmd
     , receive
     , send
-    , SocketClosure, showSocketClosure, socketClosure
+    , SocketClosure(..), showSocketClosure, socketClosure, socketClosureCode
     )
 
 {-| This WebSocket Elm module lets you encode and decode messages to pass to javascript,
@@ -96,7 +96,7 @@ close event codes are documented here:
 -}
 type WebSocketMsg
     = OnOpen { name : String }
-    | OnClose { name : String, code : Int }
+    | OnClose { name : String, code : SocketClosure }
     | OnError { name : String }
     | OnData { name : String, data : String }
 
@@ -148,7 +148,7 @@ decodeMsg =
                     "close" ->
                         JD.map2 (\a b -> OnClose { name = a, code = b })
                             (JD.field "name" JD.string)
-                            (JD.field "code" JD.int)
+                            (JD.field "code" (JD.map socketClosure JD.int))
 
                     "open" ->
                         JD.map (\a -> OnOpen { name = a })
@@ -167,7 +167,7 @@ type SocketClosure
     | Reserved
     | NoStatusReceived
     | AbnormalClosure
-    | Invalidframepayloaddata
+    | InvalidFramePayloadData
     | PolicyViolation
     | MessageTooBig
     | MandatoryExtension
@@ -176,61 +176,117 @@ type SocketClosure
     | TryAgainLater
     | BadGateway
     | TLSHandshake
+    | Other Int
 
 
-socketClosure : Int -> Maybe SocketClosure
+socketClosure : Int -> SocketClosure
 socketClosure code =
     case code of
         1000 ->
-            Just NormalClosure
+            NormalClosure
 
         1001 ->
-            Just GoingAway
+            GoingAway
 
         1002 ->
-            Just Protocolerror
+            Protocolerror
 
         1003 ->
-            Just UnsupportedData
+            UnsupportedData
 
         1004 ->
-            Just Reserved
+            Reserved
 
         1005 ->
-            Just NoStatusReceived
+            NoStatusReceived
 
         1006 ->
-            Just AbnormalClosure
+            AbnormalClosure
 
         1007 ->
-            Just Invalidframepayloaddata
+            InvalidFramePayloadData
 
         1008 ->
-            Just PolicyViolation
+            PolicyViolation
 
         1009 ->
-            Just MessageTooBig
+            MessageTooBig
 
         1010 ->
-            Just MandatoryExtension
+            MandatoryExtension
 
         1011 ->
-            Just InternalError
+            InternalError
 
         1012 ->
-            Just ServiceRestart
+            ServiceRestart
 
         1013 ->
-            Just TryAgainLater
+            TryAgainLater
 
         1014 ->
-            Just BadGateway
+            BadGateway
 
         1015 ->
-            Just TLSHandshake
+            TLSHandshake
 
         _ ->
-            Nothing
+            Other code
+
+
+socketClosureCode : SocketClosure -> Int
+socketClosureCode sc =
+    case sc of
+        NormalClosure ->
+            1000
+
+        GoingAway ->
+            1001
+
+        Protocolerror ->
+            1002
+
+        UnsupportedData ->
+            1003
+
+        Reserved ->
+            1004
+
+        NoStatusReceived ->
+            1005
+
+        AbnormalClosure ->
+            1006
+
+        InvalidFramePayloadData ->
+            1007
+
+        PolicyViolation ->
+            1008
+
+        MessageTooBig ->
+            1009
+
+        MandatoryExtension ->
+            1010
+
+        InternalError ->
+            1011
+
+        ServiceRestart ->
+            1012
+
+        TryAgainLater ->
+            1013
+
+        BadGateway ->
+            1014
+
+        TLSHandshake ->
+            1015
+
+        Other code ->
+            code
 
 
 showSocketClosure : SocketClosure -> String
@@ -257,8 +313,8 @@ showSocketClosure sc =
         AbnormalClosure ->
             "Abnormal Closure"
 
-        Invalidframepayloaddata ->
-            "Invalidframepayloaddata"
+        InvalidFramePayloadData ->
+            "Invalid Frame Payload Data"
 
         PolicyViolation ->
             "Policy Violation"
@@ -283,3 +339,6 @@ showSocketClosure sc =
 
         TLSHandshake ->
             "TLS Handshake"
+
+        Other i ->
+            "Unknown code: " ++ String.fromInt i
